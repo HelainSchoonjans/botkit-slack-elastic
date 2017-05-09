@@ -51,32 +51,34 @@ This bot demonstrates many of the core features of Botkit:
     -> http://howdy.ai/botkit
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-var env = require('node-env-file');
-env(__dirname + '/.env');
-
-
-if (!process.env.clientId || !process.env.clientSecret || !process.env.PORT) {
-  console.log('Error: Specify clientId clientSecret and PORT in environment');
-  usage_tip();
-  process.exit(1);
+var env = process.env;
+if (!env.clientId || !env.clientSecret || !env.PORT) {
+    console.log('Error: Specify clientId clientSecret and PORT in environment');
+    usage_tip();
+    process.exit(1);
 }
 
 var Botkit = require('botkit');
 var debug = require('debug')('botkit:main');
 
+var debug_logging = false;
+if(env.debug == 'true') {
+    debug_logging = true
+}
+
 var bot_options = {
-    clientId: process.env.clientId,
-    clientSecret: process.env.clientSecret,
-    // debug: true,
+    clientId: env.clientId,
+    clientSecret: env.clientSecret,
+    debug: debug_logging,
     scopes: ['bot'],
-    studio_token: process.env.studio_token,
-    studio_command_uri: process.env.studio_command_uri
+    studio_token: env.studio_token,
+    studio_command_uri: env.studio_command_uri
 };
 
 // Use a mongo database if specified, otherwise store in a JSON file local to the app.
 // Mongo is automatically configured when deploying to Heroku
-if (process.env.MONGO_URI) {
-    var mongoStorage = require('botkit-storage-mongo')({mongoUri: process.env.MONGO_URI});
+if (env.MONGO_URI) {
+    var mongoStorage = require('botkit-storage-mongo')({mongoUri: env.MONGO_URI});
     bot_options.storage = mongoStorage;
 } else {
     bot_options.json_file_store = __dirname + '/.data/db/'; // store user data in a simple JSON format
@@ -97,14 +99,6 @@ require(__dirname + '/components/user_registration.js')(controller);
 // Send an onboarding message when a new team joins
 require(__dirname + '/components/onboarding.js')(controller);
 
-// no longer necessary since slack now supports the always on event bots
-// // Set up a system to manage connections to Slack's RTM api
-// // This will eventually be removed when Slack fixes support for bot presence
-// var rtm_manager = require(__dirname + '/components/rtm_manager.js')(controller);
-//
-// // Reconnect all pre-registered bots
-// rtm_manager.reconnect();
-
 // Enable Dashbot.io plugin
 require(__dirname + '/components/plugin_dashbot.js')(controller);
 
@@ -114,45 +108,84 @@ require("fs").readdirSync(normalizedPath).forEach(function(file) {
   require("./skills/" + file)(controller);
 });
 
+/**************************************************
 
+ Setting up the default team if there isn't already a team saved.
 
-// This captures and evaluates any message sent to the bot as a DM
-// or sent to the bot in the form "@bot message" and passes it to
-// Botkit Studio to evaluate for trigger words and patterns.
-// If a trigger is matched, the conversation will automatically fire!
-// You can tie into the execution of the script using the functions
-// controller.studio.before, controller.studio.after and controller.studio.validate
-if (process.env.studio_token) {
-    controller.on('direct_message,direct_mention,mention', function(bot, message) {
-        controller.studio.runTrigger(bot, message.text, message.user, message.channel).then(function(convo) {
-            if (!convo) {
-                // no trigger was matched
-                // If you want your bot to respond to every message,
-                // define a 'fallback' script in Botkit Studio
-                // and uncomment the line below.
-                // controller.studio.run(bot, 'fallback', message.user, message.channel);
+ **************************************************/
+function createDefaultTeam() {
+    if(env.bot_user_id && env.bot_access_token) {
+        console.log("Creating default team...");
+        if (env.team_id && env.user_id && env.url && env.team && env.access_token) {
+            team = {
+                id: env.team_id,
+                createdBy: env.user_id,
+                url: env.url,
+                name: env.team,
+                default: true
+            };
+
+            team.bot = {
+                token: env.bot_access_token,
+                user_id: env.bot_user_id,
+                createdBy: env.user_id,
+                app_token: env.access_token,
+                team_id: env.team_id
+            };
+
+            if (env.ELASTIC_USER && env.ELASTIC_PASSWORD && env.ELASTIC_URL) {
+                team.elastic = {
+                    user: env.ELASTIC_USER,
+                    password: env.ELASTIC_PASSWORD,
+                    url: env.ELASTIC_URL
+                };
+                console.log('Integrated the default team with Elastic.');
             } else {
-                // set variables here that are needed for EVERY script
-                // use controller.studio.before('script') to set variables specific to a script
-                convo.setVar('current_time', new Date());
+                console.log("No Elastic user or password or url given for the main team.")
             }
-        }).catch(function(err) {
-            bot.reply(message, 'I experienced an error with a request to Botkit Studio: ' + err);
-            debug('Botkit Studio: ', err);
-        });
-    });
-} else {
-    console.log('~~~~~~~~~~');
-    console.log('NOTE: Botkit Studio functionality has not been enabled');
-    console.log('To enable, pass in a studio_token parameter with a token from https://studio.botkit.ai/');
+
+            var testbot = controller.spawn(team.bot);
+
+            testbot.api.auth.test({}, function (err, bot_auth) {
+                if (err) {
+                    debug('Error: could not authenticate bot user', err);
+                } else {
+                    team.bot.name = bot_auth.user;
+
+                    // add in info that is expected by Botkit
+                    testbot.identity = bot_auth;
+                    testbot.team_info = team;
+
+                    controller.storage.teams.save(team, function (err) {
+                        if (err) {
+                            debug('Error: could not save team record:', err);
+                        } else {
+                            controller.trigger('create_team', [testbot, team]);
+                        }
+                    });
+                }
+            });
+            console.log("Default team created.");
+        } else {
+            console.log("Missing some default team environment variables: check that 'team_id,user_id,url,team, access_token' are defined.");
+        }
+    } else {
+        console.log("No bot_user_id and bot_user_token defined; no default team created.");
+    }
 }
 
-
-
+controller.findTeamById(env.team_id, function (err, team) {
+    if(err) {
+        console.log("Default team does not exist");
+        createDefaultTeam();
+    } else {
+        console.log("Default team exists; not recreating it.");
+    }
+});
 
 function usage_tip() {
     console.log('~~~~~~~~~~');
-    console.log('Botkit Starter Kit');
+    console.log('Elastic slack bot');
     console.log('Execute your bot application like this:');
     console.log('clientId=<MY SLACK CLIENT ID> clientSecret=<MY CLIENT SECRET> PORT=3000 studio_token=<MY BOTKIT STUDIO TOKEN> node bot.js');
     console.log('Get Slack app credentials here: https://api.slack.com/apps')

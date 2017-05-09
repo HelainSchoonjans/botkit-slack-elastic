@@ -1,13 +1,6 @@
-# Botkit Starter Kit for Slack Bots
+# Slack bot for Elasticsearch clusters monitoring
 
-This repo contains everything you need to get started building a bot with Botkit and Botkit Studio!
-
-[Botkit Studio](https://studio.botkit.ai/signup?code=slackstarter) is a set of tools that adds capabilities
-to the open source Botkit library by offering hosted GUI interfaces for script
-management and action trigger definition. Botkit Studio is built by the company
-that created and maintains the open source Botkit library, [Howdy.](https://howdy.ai)
-
-While Botkit Studio is *not required* to build a bot using Botkit, we highly recommend it as your bot will be easier to manage, customize and extend.
+A slack bot for monitoring the status of the team's Elastic clusters, reporting problems.
 
 ### Instant Start
 

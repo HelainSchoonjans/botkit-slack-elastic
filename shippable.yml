@@ -1,0 +1,22 @@
+language: node_js
+
+node_js:
+  - "4.1.1"
+
+build:
+    ci:
+      - npm install
+    post_ci:
+      - ./scripts/bash/pushDockerImages.sh
+    cache: true
+    cache_dir_list:
+        - $SHIPPABLE_BUILD_DIR/node_modules
+
+integrations:
+    hub:
+      - integrationName: DockerHub
+        type: docker
+        branches:
+          only:
+            - master
+            - rc
