@@ -6,18 +6,18 @@ A slack bot for monitoring the status of the team's Elastic clusters, reporting 
 
 [Remix this project on Glitch](https://glitch.com/edit/#!/import/github/howdyai/botkit-starter-slack)
 
-[Deploy to Heroku](https://heroku.com/deploy?template=https://github.com/howdyai/botkit-starter-slack/master)
+[Deploy to Heroku](https://heroku.com/deploy?template=https://github.com/HelainSchoonjans/botkit-slack-elastic/master)
 
 ### Get Started
 
 Clone this repository:
 
-`git clone https://github.com/howdyai/botkit-starter-slack.git`
+`git clone https://github.com/HelainSchoonjans/botkit-slack-elastic.git`
 
-Install dependencies, including [Botkit](https://github.com/howdyai/botkit):
+Install dependencies, including [Botkit](https://github.com/HelainSchoonjans/botkit-slack-elastic):
 
 ```
-cd botkit-starter-slack
+cd botkit-slack-elastic
 npm install
 ```
 
