@@ -10,9 +10,9 @@ export PORT=3000
 
 # to create the default team
 # TODO HSC: find a better way of passing multiple usernames password and urls...
-export ELASTIC_USER=$ELASTIC_USER
-export ELASTIC_PASSWORD=$ELASTIC_PASSWORD
-export ELASTIC_URL=$ELASTIC_URL
+#export ELASTIC_USER=$ELASTIC_USER
+#export ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+#export ELASTIC_URL=$ELASTIC_URL
 
 export team_id=$SLACK_TEAM_ID
 export user_id=$SLACK_USER_ID

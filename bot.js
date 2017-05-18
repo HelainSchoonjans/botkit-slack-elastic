@@ -113,6 +113,7 @@ require("fs").readdirSync(normalizedPath).forEach(function(file) {
  Setting up the default team if there isn't already a team saved.
 
  **************************************************/
+// TODO HSC: I might want to reload the cluster configuration from vault
 function createDefaultTeam() {
     if(env.bot_user_id && env.bot_access_token) {
         console.log("Creating default team...");
@@ -133,17 +134,16 @@ function createDefaultTeam() {
                 team_id: env.team_id
             };
 
-            if (env.ELASTIC_USER && env.ELASTIC_PASSWORD && env.ELASTIC_URL) {
-                team.elastic = {
-                    user: env.ELASTIC_USER,
-                    password: env.ELASTIC_PASSWORD,
-                    url: env.ELASTIC_URL,
-                    clusters: []
-                };
-                console.log('Integrated the default team with Elastic.');
-            } else {
-                console.log("No Elastic user or password or url given for the main team.")
-            }
+            // cluster content:
+            // name
+            // url
+            // password
+            // username
+            // status = "green"
+
+            team.elastic = {
+                clusters: []
+            };
 
             var testbot = controller.spawn(team.bot);
 
