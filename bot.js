@@ -137,7 +137,8 @@ function createDefaultTeam() {
                 team.elastic = {
                     user: env.ELASTIC_USER,
                     password: env.ELASTIC_PASSWORD,
-                    url: env.ELASTIC_URL
+                    url: env.ELASTIC_URL,
+                    clusters: []
                 };
                 console.log('Integrated the default team with Elastic.');
             } else {
@@ -192,3 +193,25 @@ function usage_tip() {
     console.log('Get a Botkit Studio token here: https://studio.botkit.ai/')
     console.log('~~~~~~~~~~');
 }
+
+/**************************************************
+
+ Now run the cron job for polling Qlik.
+
+ **************************************************/
+var CronJob = require('cron').CronJob;
+
+/*
+ * Runs every day every minute
+ * on every month. Sends the errors to slack.
+ *
+ */
+new CronJob('*/1 * * * *', function() {
+        controller.trigger('health_check', []);
+    }, function () {
+        /* This function is executed when the job stops */
+        console.log("CRON JOB 'Qlik getting errors' DONE");
+    },
+    true, /* Start the job right now */
+    'Europe/Brussels'
+);
