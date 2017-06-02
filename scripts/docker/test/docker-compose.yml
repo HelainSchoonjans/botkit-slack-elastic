@@ -1,0 +1,9 @@
+version: "2"
+services:
+  vault:
+    image: b2boost/vault
+    command: server -dev-root-token-id=$VAULT_TOKEN -dev-listen-address=0.0.0.0:8200 -dev
+    ports:
+    - "8200:8200"
+    environment:
+    - VAULT_ADDR=http://0.0.0.0:8200
