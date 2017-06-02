@@ -7,3 +7,4 @@ services:
     - "8200:8200"
     environment:
     - VAULT_ADDR=http://0.0.0.0:8200
+# also run an elastic instance for testing...
