@@ -9,11 +9,16 @@ sleep 10s
 export VAULT_ADDR=http://192.168.99.100:8200
 export VAULT_TOKEN=$TEST_VAULT_TOKEN
 
-docker exec test_vault_1 vault write secret/elastic\
-    name=$ELASTIC \
-    password=$ELASTIC
+docker exec test_vault_1 vault write secret/elastic/clusters\
+    cluster_1=secret/elastic/clusters/cluster_1\
+    cluster_2=secret/elastic/clusters/cluster_2
 
-# TODO HSC: add more things into vault, but make vault optional...
-# TODO HSC: give a list of vault paths, one for each cluster of the organisation, and load them automatically
+docker exec test_vault_1 vault write secret/elastic/clusters/cluster_1\
+    address=http://192.168.99.100:9200\
+    name=none \
+    password=none
 
-# TODO HSC: add vault token and paths with a command for non-base organisations?
+docker exec test_vault_1 vault write secret/elastic/clusters/cluster_2\
+    host=http://192.168.99.100:9200\
+    name=none \
+    password=none

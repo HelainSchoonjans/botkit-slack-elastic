@@ -140,10 +140,15 @@ function createDefaultTeam() {
             // password
             // username
             // status = "green"
-
             team.elastic = {
                 clusters: []
             };
+
+            if(env.ELASTIC_CLUSTERS) {
+                // TODO HSC: get conf from environment variables
+            } else if(env.VAULT_ADDR && env.VAULT_TOKEN) {
+                // get the clusters from vault
+            }
 
             var testbot = controller.spawn(team.bot);
 
