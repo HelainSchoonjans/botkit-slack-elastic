@@ -89,6 +89,28 @@ var controller = Botkit.slackbot(bot_options);
 
 controller.startTicking();
 
+var vault = null;
+var clusters = [];
+var clients = {};
+
+if(env.VAULT_ADDR && env.VAULT_TOKEN) {
+    var vault_options = {
+        apiVersion: 'v1',
+        endpoint: env.VAULT_ADDR
+        token: env.VAULT_TOKEN
+    }
+    vault = require("node-vault")(vault_options);
+
+    console.log("Vault client initialized. Loading the default cluster information.");
+    // TODO HSC: load the cluster profiles?
+    // TODO HSC: I might want to create a list of clients in bot.js, and use them over the life cycle of the bot. Maybe also use the single team assumption to make things easier.
+    // TODO HSC: I might have a single path in vault, from which i would get the other paths
+    // or maybe have all the cluster paths in an env var. Then the cluster name might be in the json, with the password , username and url. Maybe don't put the username/password separately.
+    // other possibilty: one single path in vault, given by env var. It contains a map; the keys are the cluster name, the values are the url (including the passwords if any.)
+    // Then store the clients in a map with the name as key, and keep a list of maps with cluster names in team.elastic
+}
+
+
 // Set up an Express-powered webserver to expose oauth and webhook endpoints
 var webserver = require(__dirname + '/components/express_webserver.js')(controller);
 
@@ -113,7 +135,6 @@ require("fs").readdirSync(normalizedPath).forEach(function(file) {
  Setting up the default team if there isn't already a team saved.
 
  **************************************************/
-// TODO HSC: I might want to reload the cluster configuration from vault
 function createDefaultTeam() {
     if(env.bot_user_id && env.bot_access_token) {
         console.log("Creating default team...");
@@ -141,14 +162,8 @@ function createDefaultTeam() {
             // username
             // status = "green"
             team.elastic = {
-                clusters: []
+                clusters: clusters
             };
-
-            if(env.ELASTIC_CLUSTERS) {
-                // TODO HSC: get conf from environment variables
-            } else if(env.VAULT_ADDR && env.VAULT_TOKEN) {
-                // get the clusters from vault
-            }
 
             var testbot = controller.spawn(team.bot);
 

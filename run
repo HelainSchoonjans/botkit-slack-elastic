@@ -10,12 +10,17 @@ export bot_user_id=$SLACK_BOT_USER_ID
 export access_token=$SLACK_ACCESS_TOKEN
 export debug=false
 export dashbot_api_key=$DASHBOT_API_KEY
+export clientId=$ELASTIC_SLACK_CLIENT_ID
+export clientSecret=$ELASTIC_SLACK_CLIENT_SECRET
+export PORT=3000
 
-# env
-export ELASTIC_CLUSTERS=cluster_1|http://192.168.99.100:9200|none|none;cluster_2|http://192.168.99.100:9200|none|none
+# elastic
+#export ELASTIC_CLUSTERS=cluster_1|http://192.168.99.100:9200|none|none;cluster_2|http://192.168.99.100:9200|none|none
+#export ELASTIC_CLUSTERS=cluster_1|http://0.0.0.0:9200|none|none;cluster_2|http://0.0.0.0:9200|none|none
 
 # vault
-export VAULT_ADDR=http://192.168.99.100:8200
+#export VAULT_ADDR=http://192.168.99.100:8200
+export VAULT_ADDR=http://0.0.0.0:8200
 export VAULT_TOKEN=$TEST_VAULT_TOKEN
 
 node bot.js
